@@ -2,8 +2,18 @@ import cookie from 'cookie';
 
 function allowCors(handler) {
   return async (req, res) => {
-    res.setHeader('Access-Control-Allow-Credentials', true);
-    res.setHeader('Access-Control-Allow-Origin', 'https://your-frontend-domain.com'); // update this!
+    const allowedOrigins = [
+      'http://localhost:3000',          // your local frontend
+      'https://your-live-frontend.com'  // your live frontend — update this!
+    ];
+
+    const origin = req.headers.origin;
+
+    if (allowedOrigins.includes(origin)) {
+      res.setHeader('Access-Control-Allow-Origin', origin);
+    }
+
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
     res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,POST');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
