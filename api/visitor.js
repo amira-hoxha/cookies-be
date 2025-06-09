@@ -3,8 +3,8 @@ import cookie from 'cookie';
 function allowCors(handler) {
   return async (req, res) => {
     const allowedOrigins = [
-      'http://localhost:3000',
-      'https://your-live-frontend.com',  // replace this with your frontend URL
+      'http://localhost:3000', // your local frontend
+      'https://your-frontend.vercel.app' // optional if deployed frontend
     ];
 
     const origin = req.headers.origin;
@@ -29,20 +29,18 @@ const handler = (req, res) => {
   const cookies = cookie.parse(req.headers.cookie || '');
 
   if (cookies.somecookie) {
-    // Cookie exists, respond accordingly
-    res.status(200).send('Same cookie: A cookie received and the same sent to client');
+    res.status(200).json({ message: 'Cookie already exists', cookie: cookies.somecookie });
   } else {
-    // Set cookie if it doesn't exist
-    const cookieSerialized = cookie.serialize('somecookie', 'cookie text', {
+    const cookieSerialized = cookie.serialize('somecookie', 'cookie-from-server', {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      maxAge: 60 * 60 * 24 * 7, // 1 week
-      sameSite: 'none',
+      secure: true, // Vercel uses HTTPS
+      sameSite: 'None', // Required for cross-origin
       path: '/',
+      maxAge: 60 * 60 * 24 * 7 // 1 week
     });
 
     res.setHeader('Set-Cookie', cookieSerialized);
-    res.status(200).send('New cookie: A new cookie created and sent to the client');
+    res.status(200).json({ message: 'New cookie set' });
   }
 };
 
