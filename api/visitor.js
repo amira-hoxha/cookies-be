@@ -4,16 +4,13 @@ function allowCors(handler) {
   return async (req, res) => {
     const allowedOrigins = [
       'http://localhost:3000',
-      'https://your-live-frontend.com',  // <-- Replace this with your actual frontend URL
+      'https://your-live-frontend.com',  // replace this with your frontend URL
     ];
 
     const origin = req.headers.origin;
 
     if (allowedOrigins.includes(origin)) {
       res.setHeader('Access-Control-Allow-Origin', origin);
-    } else {
-      // Optional: you can block unknown origins explicitly if you want
-      res.setHeader('Access-Control-Allow-Origin', 'null');
     }
 
     res.setHeader('Access-Control-Allow-Credentials', 'true');
@@ -29,24 +26,24 @@ function allowCors(handler) {
 }
 
 const handler = (req, res) => {
-  const cookieHeader = req.headers.cookie || '';
-  console.log('Raw cookie header:', cookieHeader);
+  const cookies = cookie.parse(req.headers.cookie || '');
 
-  const cookies = cookie.parse(cookieHeader);
-  const visitorId = cookies.my_visitor_id;
+  if (cookies.somecookie) {
+    // Cookie exists, respond accordingly
+    res.status(200).send('Same cookie: A cookie received and the same sent to client');
+  } else {
+    // Set cookie if it doesn't exist
+    const cookieSerialized = cookie.serialize('somecookie', 'cookie text', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 60 * 60 * 24 * 7, // 1 week
+      sameSite: 'none',
+      path: '/',
+    });
 
-  console.log('Parsed cookies:', cookies);
-
-  if (!visitorId) {
-    return res.status(400).json({ message: 'No visitor ID cookie found' });
+    res.setHeader('Set-Cookie', cookieSerialized);
+    res.status(200).send('New cookie: A new cookie created and sent to the client');
   }
-
-  if (req.method === 'GET' || req.method === 'POST') {
-    console.log('Request body:', req.body || {});
-    return res.status(200).json({ message: `Hello visitor with ID: ${visitorId}` });
-  }
-
-  res.status(405).end();
 };
 
 export default allowCors(handler);
